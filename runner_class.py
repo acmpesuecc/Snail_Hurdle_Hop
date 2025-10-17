@@ -3,6 +3,7 @@ from sys import exit
 from random import randint, choice
 import pygame.mixer
 
+sound_on = True 
 game_paused = False
 
 highscore = 0
@@ -15,101 +16,110 @@ except FileNotFoundError:
     pass
 
 class Player(pygame.sprite.Sprite):
-	def __init__(self):
-		super().__init__()
-		player_walk_1 = pygame.image.load('graphics/player/player_walk_1.png').convert_alpha()
-		player_walk_2 = pygame.image.load('graphics/player/player_walk_2.png').convert_alpha()
-		self.player_walk = [player_walk_1,player_walk_2]
-		self.player_index = 0
-		self.player_jump = pygame.image.load('graphics/player/jump.png').convert_alpha()
+    def __init__(self):
+        super().__init__()
+        player_walk_1 = pygame.image.load('graphics/player/player_walk_1.png').convert_alpha()
+        player_walk_2 = pygame.image.load('graphics/player/player_walk_2.png').convert_alpha()
+        self.player_walk = [player_walk_1,player_walk_2]
+        self.player_index = 0
+        self.player_jump = pygame.image.load('graphics/player/jump.png').convert_alpha()
 
-		self.image = self.player_walk[self.player_index]
-		self.rect = self.image.get_rect(midbottom = (80,300))
-		self.gravity = 0
+        self.image = self.player_walk[self.player_index]
+        self.rect = self.image.get_rect(midbottom = (80,300))
+        self.gravity = 0
 
-	def player_input(self):
-		keys = pygame.key.get_pressed()
-		if keys[pygame.K_SPACE] and self.rect.bottom >= 300:
-			self.gravity = -20
-			jump_sound.play()
+    def player_input(self):
+        global sound_on
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE] and self.rect.bottom >= 300:
+            self.gravity = -20
+            if sound_on:
+                jump_sound.play()
 
-	def apply_gravity(self):
-		self.gravity += 1
-		self.rect.y += self.gravity
-		if self.rect.bottom >= 300:
-			self.rect.bottom = 300
+    def apply_gravity(self):
+        self.gravity += 1
+        self.rect.y += self.gravity
+        if self.rect.bottom >= 300:
+            self.rect.bottom = 300
 
-	def animation_state(self):
-		if self.rect.bottom < 300: 
-			self.image = self.player_jump
-		else:
-			self.player_index += 0.1
-			if self.player_index >= len(self.player_walk):self.player_index = 0
-			self.image = self.player_walk[int(self.player_index)]
+    def animation_state(self):
+        if self.rect.bottom < 300: 
+            self.image = self.player_jump
+        else:
+            self.player_index += 0.1
+            if self.player_index >= len(self.player_walk):self.player_index = 0
+            self.image = self.player_walk[int(self.player_index)]
 
-	def update(self):
-		self.player_input()
-		self.apply_gravity()
-		self.animation_state()
+    def update(self):
+        self.player_input()
+        self.apply_gravity()
+        self.animation_state()
 
 class Obstacle(pygame.sprite.Sprite):
-	def __init__(self,type):
-		super().__init__()
-		
-		if type == 'fly':
-			fly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
-			fly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
-			self.frames = [fly_1,fly_2]
-			y_pos = 210
-		
-		elif type == 'blob':
-			blob_1 = pygame.image.load('graphics/Blob/blob.png').convert_alpha()
-			blob_2 = pygame.image.load('graphics/Blob/blob1.png').convert_alpha()
-			self.frames = [blob_1,blob_2]
-			y_pos = 300
+    def __init__(self,type):
+        super().__init__()
+        
+        if type == 'fly':
+            fly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
+            fly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
+            self.frames = [fly_1,fly_2]
+            y_pos = 210
+        
+        elif type == 'blob':
+            blob_1 = pygame.image.load('graphics/Blob/blob.png').convert_alpha()
+            blob_2 = pygame.image.load('graphics/Blob/blob1.png').convert_alpha()
+            self.frames = [blob_1,blob_2]
+            y_pos = 300
 
-		elif type == 'ghost':
-			ghost_1 = pygame.image.load('graphics/Ghost/ghost.png').convert_alpha()
-			ghost_2 = pygame.image.load('graphics/Ghost/ghost1.png').convert_alpha()
-			self.frames = [ghost_1,ghost_2]
-			y_pos = 210
+        elif type == 'ghost':
+            ghost_1 = pygame.image.load('graphics/Ghost/ghost.png').convert_alpha()
+            ghost_2 = pygame.image.load('graphics/Ghost/ghost1.png').convert_alpha()
+            self.frames = [ghost_1,ghost_2]
+            y_pos = 210
 
-		else:
-			snail_1 = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
-			snail_2 = pygame.image.load('graphics/snail/snail2.png').convert_alpha()
-			self.frames = [snail_1,snail_2]
-			y_pos  = 300
+        else:
+            snail_1 = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
+            snail_2 = pygame.image.load('graphics/snail/snail2.png').convert_alpha()
+            self.frames = [snail_1,snail_2]
+            y_pos  = 300
 
-		self.animation_index = 0
-		self.image = self.frames[self.animation_index]
-		self.rect = self.image.get_rect(midbottom = (randint(900,1100),y_pos))
+        self.animation_index = 0
+        self.image = self.frames[self.animation_index]
+        self.rect = self.image.get_rect(midbottom = (randint(900,1100),y_pos))
 
-	def animation_state(self):
-		self.animation_index += 0.1 
-		if self.animation_index >= len(self.frames): self.animation_index = 0
-		self.image = self.frames[int(self.animation_index)]
+    def animation_state(self):
+        self.animation_index += 0.1 
+        if self.animation_index >= len(self.frames): self.animation_index = 0
+        self.image = self.frames[int(self.animation_index)]
 
-	def update(self):
-		self.animation_state()
-		self.rect.x -= 6
-		self.destroy()
+    def update(self):
+        self.animation_state()
+        self.rect.x -= 6
+        self.destroy()
 
-	def destroy(self):
-		if self.rect.x <= -100: 
-			self.kill()
+    def destroy(self):
+        if self.rect.x <= -100: 
+            self.kill()
 
 def display_score():
-	current_time = int(pygame.time.get_ticks() / 1000) - start_time
-	score_surf = test_font.render(f'Score: {current_time}',False,(64,64,64))
-	score_rect = score_surf.get_rect(center = (400,50))
-	screen.blit(score_surf,score_rect)
-	return current_time
+    current_time = int(pygame.time.get_ticks() / 1000) - start_time
+    score_surf = test_font.render(f'Score: {current_time}',False,(64,64,64))
+    score_rect = score_surf.get_rect(center = (400,50))
+    screen.blit(score_surf,score_rect)
+    return current_time
+
+def display_sound_status():
+    global sound_on
+    status_text = 'Sound: ON' if sound_on else 'Sound: OFF'
+    status_surf = test_font.render(status_text, False, (200, 200, 200)) 
+    status_rect = status_surf.get_rect(topleft=(10, 10))
+    screen.blit(status_surf, status_rect)
 
 def collision_sprite():
-	if pygame.sprite.spritecollide(player.sprite,obstacle_group,False):
-		obstacle_group.empty()
-		return False
-	else: return True
+    if pygame.sprite.spritecollide(player.sprite,obstacle_group,False):
+        obstacle_group.empty()
+        return False
+    else: return True
 
 
 pygame.init()
@@ -117,7 +127,7 @@ pygame.mixer.init()
 pygame.mixer.music.load('running.mp3')
 jump_sound = pygame.mixer.Sound('jump_sound.mp3')
 pygame.mixer.music.set_volume(0.5)
-pygame.mixer.music.play(-1)
+
 screen = pygame.display.set_mode((800,400))
 pygame.display.set_caption('Runner')
 clock = pygame.time.Clock()
@@ -147,6 +157,10 @@ game_message_rect = game_message.get_rect(center = (400,330))
 pause_instruction = test_font.render('Press P during game to Pause/Resume', False, (111,196,169))
 pause_instruction_rect = pause_instruction.get_rect(center=(400, 360))
 
+sound_instruction = test_font.render('Press M to Toggle Sound', False, (111,196,169))
+sound_instruction_rect = sound_instruction.get_rect(center=(400, 390))
+
+
 obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer,1500)
 
@@ -155,18 +169,32 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+        
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+            sound_on = not sound_on
+            if sound_on and game_active and not game_paused:
+                pygame.mixer.music.unpause()
+            elif not sound_on:
+                pygame.mixer.music.pause()
 
         if game_active:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 game_paused = not game_paused
+                if sound_on:
+                    if game_paused:
+                        pygame.mixer.music.pause()
+                    else:
+                        pygame.mixer.music.unpause()
 
-            if event.type == obstacle_timer:
+            if event.type == obstacle_timer and not game_paused:
                 obstacle_group.add(Obstacle(choice(['fly','blob','snail','ghost','ghost','blob'])))
 
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
                 start_time = int(pygame.time.get_ticks() / 1000)
+                if sound_on:
+                    pygame.mixer.music.play(-1)
 
     if game_active:
         if not game_paused:
@@ -189,6 +217,9 @@ while True:
             obstacle_group.update()
 
             game_active = collision_sprite()
+            
+            if not game_active:
+                pygame.mixer.music.stop()
         else:
             pause_text = test_font.render('Game Paused - Press P to Resume', False, (255, 255, 0))
             pause_rect = pause_text.get_rect(center=(400, 200))
@@ -208,11 +239,13 @@ while True:
 
         if score == 0:
             screen.blit(game_message, game_message_rect)
-            screen.blit(pause_instruction, pause_instruction_rect)  
+            screen.blit(pause_instruction, pause_instruction_rect) 
+            screen.blit(sound_instruction, sound_instruction_rect) 
         else:
             screen.blit(highscore_message, highscore_message_rect)
             screen.blit(score_message, score_message_rect)
 
+    display_sound_status()
+    
     pygame.display.update()
     clock.tick(60)
-
