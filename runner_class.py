@@ -3,7 +3,14 @@ from sys import exit
 from random import randint, choice
 import pygame.mixer
 
-highscore=0
+highscore = 0
+try:
+    with open("highscore.txt", "r") as f:
+        content = f.read().strip()
+        if content:
+            highscore = int(content)
+except FileNotFoundError:
+    pass
 
 
 class Player(pygame.sprite.Sprite):
@@ -160,8 +167,13 @@ while True:
 		screen.blit(ground_surface,(0,300))
 		score = display_score()
 
-		if score>highscore:
-			highscore=score
+		if score > highscore:
+				highscore = score
+				try:
+					with open("highscore.txt", "w") as f:
+						f.write(str(highscore))
+				except:
+					print(f"Error saving high score: {e}")
 	
 		player.draw(screen)
 		player.update()
