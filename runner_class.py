@@ -91,7 +91,7 @@ class Obstacle(pygame.sprite.Sprite):
 
 	def update(self):
 		self.animation_state()
-		self.rect.x -= 6
+		self.rect.x -= 6 + score*game_speed_multipler
 		self.destroy()
 
 	def destroy(self):
@@ -125,6 +125,7 @@ test_font = pygame.font.Font('font/Pixeltype.ttf', 50)
 game_active = False
 start_time = 0
 score = 0
+game_speed_multipler=0.3
 
 player = pygame.sprite.GroupSingle()
 player.add(Player())
@@ -215,4 +216,5 @@ while True:
 
     pygame.display.update()
     clock.tick(60)
+
 
