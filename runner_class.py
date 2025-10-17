@@ -3,6 +3,7 @@ from sys import exit
 from random import randint, choice
 import pygame.mixer
 
+highscore=0
 game_paused = False
 
 highscore = 0
@@ -17,11 +18,21 @@ except FileNotFoundError:
 class Player(pygame.sprite.Sprite):
 	def __init__(self):
 		super().__init__()
-		player_walk_1 = pygame.image.load('graphics/player/player_walk_1.png').convert_alpha()
-		player_walk_2 = pygame.image.load('graphics/player/player_walk_2.png').convert_alpha()
+		#Tries to load the file if it fails it prints an error message 
+		try:
+			player_walk_1 = pygame.image.load('player_walk_1.png').convert_alpha()
+		except FileNotFoundError:
+			print("Error:player_walk_1.png is not found")
+		try:
+			player_walk_2 = pygame.image.load('player_walk_2.png').convert_alpha()
+		except FileNotFoundError:
+			print("Error :player_walk_2.png is not found")
 		self.player_walk = [player_walk_1,player_walk_2]
 		self.player_index = 0
-		self.player_jump = pygame.image.load('graphics/player/jump.png').convert_alpha()
+		try:
+			self.player_jump = pygame.image.load('jump.png').convert_alpha()
+		except FileNotFoundError:
+			print("Error:Graphics/player/jump.png not found in working directory")
 
 		self.image = self.player_walk[self.player_index]
 		self.rect = self.image.get_rect(midbottom = (80,300))
@@ -57,26 +68,26 @@ class Obstacle(pygame.sprite.Sprite):
 		super().__init__()
 		
 		if type == 'fly':
-			fly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
-			fly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
+			fly_1 = pygame.image.load('fly1.png').convert_alpha()
+			fly_2 = pygame.image.load('fly2.png').convert_alpha()
 			self.frames = [fly_1,fly_2]
 			y_pos = 210
 		
 		elif type == 'blob':
-			blob_1 = pygame.image.load('graphics/Blob/blob.png').convert_alpha()
-			blob_2 = pygame.image.load('graphics/Blob/blob1.png').convert_alpha()
+			blob_1 = pygame.image.load('blob.png').convert_alpha()
+			blob_2 = pygame.image.load('blob1.png').convert_alpha()
 			self.frames = [blob_1,blob_2]
 			y_pos = 300
 
 		elif type == 'ghost':
-			ghost_1 = pygame.image.load('graphics/Ghost/ghost.png').convert_alpha()
-			ghost_2 = pygame.image.load('graphics/Ghost/ghost1.png').convert_alpha()
+			ghost_1 = pygame.image.load('ghost.png').convert_alpha()
+			ghost_2 = pygame.image.load('ghost1.png').convert_alpha()
 			self.frames = [ghost_1,ghost_2]
 			y_pos = 210
 
 		else:
-			snail_1 = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
-			snail_2 = pygame.image.load('graphics/snail/snail2.png').convert_alpha()
+			snail_1 = pygame.image.load('snail1.png').convert_alpha()
+			snail_2 = pygame.image.load('snail2.png').convert_alpha()
 			self.frames = [snail_1,snail_2]
 			y_pos  = 300
 
@@ -121,7 +132,11 @@ pygame.mixer.music.play(-1)
 screen = pygame.display.set_mode((800,400))
 pygame.display.set_caption('Runner')
 clock = pygame.time.Clock()
-test_font = pygame.font.Font('font/Pixeltype.ttf', 50)
+
+try:
+	test_font = pygame.font.Font('Pixeltype.ttf', 50)
+except FileNotFoundError:
+	print("Error:player_walk_1.png is not found")
 game_active = False
 start_time = 0
 score = 0
@@ -131,10 +146,21 @@ player.add(Player())
 
 obstacle_group = pygame.sprite.Group()
 
-sky_surface = pygame.image.load('graphics/Sky.png').convert()
-ground_surface = pygame.image.load('graphics/ground.png').convert()
+try:
+	sky_surface = pygame.image.load('Sky.png').convert()
+except FileNotFoundError:
+	print("Error:graphics/sky.png not found")
+try:
+	ground_surface = pygame.image.load('ground.png').convert()
+except FileNotFoundError:
+	print("error:graphics/ground.png not found")
 
-player_stand = pygame.image.load('graphics/player/player_stand.png').convert_alpha()
+#defining player_stand as it now exists in try function,using picture saved in my folder
+player_stand = pygame.image.load('ground.png')
+try:
+	player_stand = pygame.image.load('player_stand.png').convert_alpha()
+except FileNotFoundError:
+	print("Error:graphics/player/player_stand.png not found")
 player_stand = pygame.transform.rotozoom(player_stand,0,2)
 player_stand_rect = player_stand.get_rect(center = (400,200))
 
@@ -151,6 +177,63 @@ obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer,1500)
 
 while True:
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			pygame.quit()
+			exit()
+
+		if game_active:
+			if event.type == obstacle_timer:
+				obstacle_group.add(Obstacle(choice(['fly','blob','snail','ghost','ghost','blob'])))
+		
+		else:
+			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+				game_active = True
+				start_time = int(pygame.time.get_ticks() / 1000)
+
+
+	if game_active:
+		screen.blit(sky_surface,(0,0))
+		screen.blit(ground_surface,(0,300))
+		score = display_score()
+
+		if score>highscore:
+			highscore=score
+			try:
+				with open("highscore.txt", "w") as f:
+						f.write(str(highscore))
+			except:
+				print(f"Error saving high score: {e}")
+	
+		player.draw(screen)
+		player.update()
+
+		obstacle_group.draw(screen)
+		obstacle_group.update()
+
+		game_active = collision_sprite()
+		
+	else:
+		screen.fill((94,129,162))
+		screen.blit(player_stand,player_stand_rect)
+
+		highscore_message = test_font.render(f'Your high score: {highscore}',False,(111,196,169))
+		highscore_message_rect = highscore_message.get_rect(center = (400,330))
+		screen.blit(game_name,game_name_rect)
+
+
+		score_message = test_font.render(f'Your score: {score}',False,(111,196,169))
+		score_message_rect = score_message.get_rect(center = (400,370))
+		screen.blit(game_name,game_name_rect)
+
+		if score == 0: screen.blit(game_message,game_message_rect)
+		else: 
+			screen.blit(highscore_message,highscore_message_rect)
+			screen.blit(score_message,score_message_rect)
+
+	pygame.display.update()
+	clock.tick(60)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
