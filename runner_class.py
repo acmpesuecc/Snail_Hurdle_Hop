@@ -4,8 +4,15 @@ from random import randint, choice
 import pygame.mixer
 
 game_paused = False
-highscore=0
 
+highscore = 0
+try:
+    with open("highscore.txt", "r") as f:
+        content = f.read().strip()
+        if content:
+            highscore = int(content)
+except FileNotFoundError:
+    pass
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self):
@@ -137,6 +144,9 @@ game_name_rect = game_name.get_rect(center = (400,80))
 game_message = test_font.render('Press space to run',False,(111,196,169))
 game_message_rect = game_message.get_rect(center = (400,330))
 
+pause_instruction = test_font.render('Press P during game to Pause/Resume', False, (111,196,169))
+pause_instruction_rect = pause_instruction.get_rect(center=(400, 360))
+
 obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer,1500)
 
@@ -154,18 +164,23 @@ while True:
                 obstacle_group.add(Obstacle(choice(['fly','blob','snail','ghost','ghost','blob'])))
 
         else:
-            if event.type == pygame.KEYDOWN and event.key== pygame.K_SPACE:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
                 start_time = int(pygame.time.get_ticks() / 1000)
 
     if game_active:
         if not game_paused:
-            screen.blit(sky_surface,(0,0))
-            screen.blit(ground_surface,(0,300))
+            screen.blit(sky_surface, (0,0))
+            screen.blit(ground_surface, (0,300))
             score = display_score()
 
             if score > highscore:
                 highscore = score
+                try:
+                    with open("highscore.txt", "w") as f:
+                        f.write(str(highscore))
+                except Exception as e:
+                    print(f"Error saving high score: {e}")
 
             player.draw(screen)
             player.update()
@@ -181,23 +196,23 @@ while True:
 
     else:
         screen.fill((94,129,162))
-        screen.blit(player_stand,player_stand_rect)
+        screen.blit(player_stand, player_stand_rect)
 
-        highscore_message = test_font.render(f'Your high score: {highscore}',False,(111,196,169))
-        highscore_message_rect = highscore_message.get_rect(center = (400,330))
-        screen.blit(game_name,game_name_rect)
+        highscore_message = test_font.render(f'Your high score: {highscore}', False, (111,196,169))
+        highscore_message_rect = highscore_message.get_rect(center=(400,330))
+        screen.blit(game_name, game_name_rect)
 
-        score_message = test_font.render(f'Your score: {score}',False,(111,196,169))
-        score_message_rect = score_message.get_rect(center = (400,370))
-        screen.blit(game_name,game_name_rect)
+        score_message = test_font.render(f'Your score: {score}', False, (111,196,169))
+        score_message_rect = score_message.get_rect(center=(400,370))
+        screen.blit(game_name, game_name_rect)
 
         if score == 0:
-            screen.blit(game_message,game_message_rect)
+            screen.blit(game_message, game_message_rect)
+            screen.blit(pause_instruction, pause_instruction_rect)  
         else:
-            screen.blit(highscore_message,highscore_message_rect)
-            screen.blit(score_message,score_message_rect)
+            screen.blit(highscore_message, highscore_message_rect)
+            screen.blit(score_message, score_message_rect)
 
     pygame.display.update()
     clock.tick(60)
-
 
