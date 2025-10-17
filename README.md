@@ -29,11 +29,45 @@ The game ends when the character collides with a snail.
 Try to achieve the highest score by surviving and jumping over as many snails as possible.
 
 # Contributing
-To contribute to this project, please follow these steps:
-1. Fork the repository.
-2. Create a new branch for your features or bug fixes.
-3. Make your changes and commit them with descriptive messages.
-4. Push your changes to your fork.
-5. Submit a pull request, explaining the changes you made.
+We welcome contributions to Snail Hurdle Hop! Follow these steps to get started:
+
+Fork the repository to your GitHub account.
+
+Clone your fork locally:
+
+git clone https://github.com/<your-username>/Snail_Hurdle_Hop.git
+
+
+Create a new branch for your changes:
+
+git checkout -b <branch-name>
+
+
+Make your changes (new features, bug fixes, documentation, etc.).
+
+Commit your changes with a clear message:
+
+git commit -m "Add feature / fix bug / update docs"
+
+
+Push the branch to your fork:
+
+git push origin <branch-name>
+
+
+Open a Pull Request on the main repository: explain what you changed and reference any related issues.
+
+Guidelines
+
+Keep commits clean and descriptive.
+
+Follow existing code style and project structure.
+
+Only submit relevant changes; avoid unrelated modifications.
+
+Respect maintainers’ feedback and respond to comments.
+
+Thank you for contributing!
+
 
 # S Kalai Vani

@@ -3,6 +3,7 @@ from sys import exit
 from random import randint, choice
 import os
 
+
 pygame.init()
 pygame.mixer.init()
 
@@ -12,6 +13,17 @@ if os.path.exists("highscore.txt"):
 else:
     highscore = 0
 
+game_paused = False
+
+
+highscore = 0
+try:
+    with open("highscore.txt", "r") as f:
+        content = f.read().strip()
+        if content:
+            highscore = int(content)
+except FileNotFoundError:
+    pass
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -167,6 +179,9 @@ game_message_rect = game_message.get_rect(center=(400, 330))
 
 music_button_rect = pygame.Rect(320, 260, 160, 50)
 
+pause_instruction = test_font.render('Press P during game to Pause/Resume', False, (111,196,169))
+pause_instruction_rect = pause_instruction.get_rect(center=(400, 360))
+
 obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer, 1500)
 
@@ -174,20 +189,34 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
 
+
             with open("highscore.txt", "w") as f:
                 f.write(str(highscore))
+
+
             pygame.quit()
             exit()
 
         if game_active:
+
             if event.type == obstacle_timer:
                 obstacle_group.add(
                     Obstacle(choice(['fly', 'blob', 'snail', 'ghost'])))
         else:
 
+
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                game_paused = not game_paused
+
+            if event.type == obstacle_timer:
+                obstacle_group.add(Obstacle(choice(['fly','blob','snail','ghost','ghost','blob'])))
+
+        else:
+
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 game_active = True
                 start_time = int(pygame.time.get_ticks() / 1000)
+
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if music_button_rect.collidepoint(event.pos):
@@ -240,3 +269,53 @@ while True:
 
     pygame.display.update()
     clock.tick(60)
+
+    if game_active:
+        if not game_paused:
+            screen.blit(sky_surface, (0,0))
+            screen.blit(ground_surface, (0,300))
+            score = display_score()
+
+            if score > highscore:
+                highscore = score
+                try:
+                    with open("highscore.txt", "w") as f:
+                        f.write(str(highscore))
+                except Exception as e:
+                    print(f"Error saving high score: {e}")
+
+            player.draw(screen)
+            player.update()
+
+            obstacle_group.draw(screen)
+            obstacle_group.update()
+
+            game_active = collision_sprite()
+        else:
+            pause_text = test_font.render('Game Paused - Press P to Resume', False, (255, 255, 0))
+            pause_rect = pause_text.get_rect(center=(400, 200))
+            screen.blit(pause_text, pause_rect)
+
+    else:
+        screen.fill((94,129,162))
+        screen.blit(player_stand, player_stand_rect)
+
+        highscore_message = test_font.render(f'Your high score: {highscore}', False, (111,196,169))
+        highscore_message_rect = highscore_message.get_rect(center=(400,330))
+        screen.blit(game_name, game_name_rect)
+
+        score_message = test_font.render(f'Your score: {score}', False, (111,196,169))
+        score_message_rect = score_message.get_rect(center=(400,370))
+        screen.blit(game_name, game_name_rect)
+
+        if score == 0:
+            screen.blit(game_message, game_message_rect)
+            screen.blit(pause_instruction, pause_instruction_rect)  
+        else:
+            screen.blit(highscore_message, highscore_message_rect)
+            screen.blit(score_message, score_message_rect)
+
+    pygame.display.update()
+    clock.tick(60)
+
+
