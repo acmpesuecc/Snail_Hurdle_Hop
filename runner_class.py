@@ -121,6 +121,50 @@ class Obstacle(pygame.sprite.Sprite):
         if self.rect.x <= -100:
             self.kill()
 
+	def __init__(self,type):
+		super().__init__()
+		
+		if type == 'fly':
+			fly_1 = pygame.image.load('graphics/fly/fly1.png').convert_alpha()
+			fly_2 = pygame.image.load('graphics/fly/fly2.png').convert_alpha()
+			self.frames = [fly_1,fly_2]
+			y_pos = 210
+		
+		elif type == 'blob':
+			blob_1 = pygame.image.load('graphics/Blob/blob.png').convert_alpha()
+			blob_2 = pygame.image.load('graphics/Blob/blob1.png').convert_alpha()
+			self.frames = [blob_1,blob_2]
+			y_pos = 300
+
+		elif type == 'ghost':
+			ghost_1 = pygame.image.load('graphics/Ghost/ghost.png').convert_alpha()
+			ghost_2 = pygame.image.load('graphics/Ghost/ghost1.png').convert_alpha()
+			self.frames = [ghost_1,ghost_2]
+			y_pos = 210
+
+		else:
+			snail_1 = pygame.image.load('graphics/snail/snail1.png').convert_alpha()
+			snail_2 = pygame.image.load('graphics/snail/snail2.png').convert_alpha()
+			self.frames = [snail_1,snail_2]
+			y_pos  = 300
+
+		self.animation_index = 0
+		self.image = self.frames[self.animation_index]
+		self.rect = self.image.get_rect(midbottom = (randint(900,1100),y_pos))
+
+	def animation_state(self):
+		self.animation_index += 0.1 
+		if self.animation_index >= len(self.frames): self.animation_index = 0
+		self.image = self.frames[int(self.animation_index)]
+
+	def update(self):
+		self.animation_state()
+		self.rect.x -= 6 + score*game_speed_multipler
+		self.destroy()
+
+	def destroy(self):
+		if self.rect.x <= -100: 
+			self.kill()
 
 def display_score():
     current_time = int(pygame.time.get_ticks() / 1000) - start_time
@@ -159,6 +203,7 @@ except:
     print(" Missing or invalid audio files. Game will run without sound.")
     jump_sound = pygame.mixer.Sound(file=None)
 
+game_speed_multipler=0.3
 
 player = pygame.sprite.GroupSingle()
 player.add(Player())
